@@ -1,3 +1,5 @@
+const $cpuCard = $('<div>').addClass('cpu-hand');
+
 //Global Variables 
 
 const cpuHand = []; //store the cards that cpu have on hand
@@ -101,7 +103,6 @@ const shuffleDeck = (drawDeck) => {
 //* start of game
 
 const dealCards = () => {
-    const $cpuCard = $('<div>').addClass('cpu-hand');
     $('.cpu-box').append($cpuCard);
     const $playerHand = $('<div>').addClass('player-hand');
     $('.player-area').append($playerHand)
@@ -139,7 +140,7 @@ const startPlayDiscard = () =>{
 }
 
 const newGame = () => {
-    console.log('new round')
+    console.log('Lets go, new round')
     gameOn = true
     // clear hands and play pile
     $('.cpu-hand').remove()
@@ -150,17 +151,47 @@ const newGame = () => {
     discardDeck.length = 0
 
     // create new deck
-    //createDeck()
+    createDeck()
     // shuffle deck
-    //shuffleDeck(deck)
+    shuffleDeck(drawDeck)
     // deal cards and first play card
-    //dealCards()
+    dealCards()
     // set down first play card that isn't an action card
-    //startPlayPile()
+    startPlayDiscard()
 
-    //if (colorPickerIsOpen) hideColorPicker()
+    if (colorPickerIsOpen) hideColorPicker()
 }
 
+const updateDiscardPile = () =>{
+    $('.discard-Deck').remove()
+    const $discardDeck = $('<div>').addClass('discard-Deck')
+    $('.deal-area').append($discardDeck)
+    // will need to update the discardDeck
+    $discardDeck.append($('<img>').attr('src', `${discardDeck[0].src}`))
+}
+
+const drawCard = (whoToGetCard) =>{
+    // check if there are any cards in the deck to be drawn
+    if (drawDeck.length > 0){
+        const newCard = drawDeck.shift()
+        whoToGetCard.push(newCard)
+        console.log(whoToGetCard, "drew one card")
+    } else {
+        shuffleDeck(discardDeck)
+        for (let i = 0; i < discardDeck.length - 1; i++){
+            // push all the cards back to the drawDeck
+            drawDeck.push(discardDeck[i])
+            console.log(whoToGetCard.length)
+        }
+        // leave the last card in the deck to continue playing
+        discardDeck.length = 1
+        // draw the new card from the drawDeck
+        const newCard = drawDeck.shift()
+        whoToGetCard.push(newCard);
+        console.log(whoToGetCard, "drew one card") 
+        console.log(whoToGetCard.length)
+    }
+}
 
 
 
@@ -183,7 +214,8 @@ const main = () =>{
     shuffleDeck(drawDeck)
     dealCards()
     startPlayDiscard()
-    newGame()
+    drawCard(cpuHand)
+
 
 }
 

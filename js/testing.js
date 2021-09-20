@@ -1,22 +1,22 @@
-//Global Variables 
+// //* variables 
 
-const cpuHand = []; //store the cards that cpu have on hand
-const playerHand = []; //store the cards that cpu have on hand
+const cpuHand = []; 
+const playerHand = [];
 
-const drawDeck = []; //store the full cards to play
-const discardDeck =[]; //store the cards that has been discarded
+const drawDeck = [];
+const discardDeck =[];
 
 let cpuScore = 0;
 let playerScore = 0;
 
-// Variables to change during the game
+
+//* Variables to change during the game
 let playerTurn = true;
-let gameOn = true;
-let colorPickerIsOpen = false;
+let colorPicker = false;
 let cpuDelay = Math.floor((Math.random() * cpuHand.length * 200) + 1500);
 
 
-// Cards & DrawDecks =======================================
+//* Cards & DrawDecks =======================================
 // Setting up the class of a card
 class Card {
     constructor(rgb, value, changeTurn, drawValue, imgSrc) {
@@ -63,6 +63,7 @@ const createCardGroup =(rgb, color) => {
     }
 }
 
+
 const createDeck = () => {
     // reset the the previously saved deck in the system
     drawDeck.length = 0
@@ -101,29 +102,34 @@ const shuffleDeck = (drawDeck) => {
 //* start of game
 
 const dealCards = () => {
-    const $cpuCard = $('<div>').addClass('cpu-hand');
-    $('.cpu-box').append($cpuCard);
-    const $playerHand = $('<div>').addClass('player-hand');
-    $('.player-area').append($playerHand)
-    
+    const $cpubox = $('<div>').addClass('cpu-box');
+    const $cpuCard = $('<div>').addCalss('cpu-hand');
+    const $h3 = $('<h3>').text(`CPU cards: ${cpuHand.length}`);
+    $cpubox.append($h3);
+
     for (i = 0; i < 7; i++){
         // #region GAME behaviors
         cpuHand.push(drawDeck.shift());
         playerHand.push(drawDeck.shift());
 
         // place image in the front-end for the cpu (back-face of the uno card)
-        $cpuCard.append($('<img>').attr('src',"images/back.png"))
 
-    // place image on the front-end for the player(front-end of the uno card based on the value)
-        $playerHand.append($('<img>').attr('src', `${playerHand[i].src}`).attr('id', i))
+
+
+
+
+        // place image on the front-end for the player(front-end of the uno card based on the value)
+
+
     }
-    $('#cpuNumberCards').text(`${cpuHand.length}`);
-    
+    // show the number of cards that is on the CPU hand
+    $('#cpuNumberCards').text(cpuHand.length);
+    console.log(cpuHand.length) //TODO to be commented out
+    console.log(playerHand.length) //TODO to be commented out
+    console.log(drawDeck.length) //TODO to be commented out
 }
 
 const startPlayDiscard = () =>{
-    const $discardDeck = $('<div>').addClass('discard-Deck')
-    $('.deal-area').append($discardDeck)
     for(let i = 0; i < drawDeck.length; i++ ){
         if( drawDeck[i].color !=="any" && drawDeck[i].value <9){
             //being playing the game with the first valid card
@@ -132,59 +138,47 @@ const startPlayDiscard = () =>{
             break
         }
     }
-    
-    $discardDeck.append($('<img>').attr('src', `${discardDeck[0].src}`))
     console.log(discardDeck)
     console.log(drawDeck.length)
-}
 
-const newGame = () => {
-    console.log('new round')
-    gameOn = true
-    // clear hands and play pile
-    $('.cpu-hand').remove()
-    cpuHand.length = 0
-    $('.player-hand').remove()
-    playerHand.length = 0
-    $('.discard-Deck').remove()
-    discardDeck.length = 0
-
-    // create new deck
-    //createDeck()
-    // shuffle deck
-    //shuffleDeck(deck)
-    // deal cards and first play card
-    //dealCards()
-    // set down first play card that isn't an action card
-    //startPlayPile()
-
-    //if (colorPickerIsOpen) hideColorPicker()
-}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-const main = () =>{
-    createDeck()
-    shuffleDeck(drawDeck)
-    dealCards()
-    startPlayDiscard()
-    newGame()
+    // set played card with the correct image
 
 }
 
-$(main)
+
+
+createDeck()
+shuffleDeck(drawDeck)
+dealCards()
+startPlayDiscard()
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// 
+
+
+
+
+// const main =() =>{
+
+
+//  }
+
+//  $(main)

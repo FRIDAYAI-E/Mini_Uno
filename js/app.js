@@ -1,4 +1,4 @@
-const $cpuCard = $('<div>').addClass('cpu-hand');
+
 
 //Global Variables 
 
@@ -12,9 +12,10 @@ let cpuScore = 0;
 let playerScore = 0;
 
 // Variables to change during the game
-let playerTurn = true;
-let gameOn = true;
+let playerTurn = true; //The player will be playing in this round when
+let gameOn = true; // is the game still on
 let colorPickerIsOpen = false;
+let gameOver = 0
 let cpuDelay = Math.floor((Math.random() * cpuHand.length * 200) + 1500);
 
 
@@ -100,9 +101,10 @@ const shuffleDeck = (drawDeck) => {
 //* End of game set-up process
 
 
-//* start of game
+//* Game Functions
 
 const dealCards = () => {
+    const $cpuCard = $('<div>').addClass('cpu-hand');
     $('.cpu-box').append($cpuCard);
     const $playerHand = $('<div>').addClass('player-hand');
     $('.player-area').append($playerHand)
@@ -116,7 +118,7 @@ const dealCards = () => {
         $cpuCard.append($('<img>').attr('src',"images/back.png"))
 
     // place image on the front-end for the player(front-end of the uno card based on the value)
-        $playerHand.append($('<img>').attr('src', `${playerHand[i].src}`).attr('id', i))
+        $playerHand.append($('<img>').attr('src', `${playerHand[i].src}`).addClass('playerHandCard').attr('id',`${i}`))
     }
     $('#cpuNumberCards').text(`${cpuHand.length}`);
     
@@ -167,7 +169,7 @@ const updateDiscardPile = () =>{
     const $discardDeck = $('<div>').addClass('discard-Deck')
     $('.deal-area').append($discardDeck)
     // will need to update the discardDeck
-    $discardDeck.append($('<img>').attr('src', `${discardDeck[0].src}`))
+    $discardDeck.append($('<img>').attr('src', `${discardDeck[discardDeck.length - 1].src}`))
 }
 
 const drawCard = (whoToGetCard) =>{
@@ -193,6 +195,137 @@ const drawCard = (whoToGetCard) =>{
     }
 }
 
+const colorSelector = () =>{
+    // show the color picker
+    const $colorPicker = $('.choose-color')
+    $colorPicker.fadeTo("fast", 1)
+    colorPickerIsOpen = true
+    
+
+    // assign event handler to the buttons
+    $(".red").on('click', (event)=>{
+        console.log('Red Selected')
+        chooseColor('rgb(255, 6, 0)')
+    })
+
+    $('.green').on('click', (event) => {
+        // pass thru the class name for color
+        console.log('Green Selected')
+        chooseColor('rgb(0, 170, 69)')
+    })
+    $('.blue').on('click', (event) => {
+        // pass thru the class name for color
+        console.log('Blue Selected')
+        chooseColor('rgb(0, 150, 224)')
+    })
+    $('.yellow').on('click', (event) => {
+        // pass thru the class name for color
+        console.log('Yellow Selected');
+        chooseColor('rgb(255, 222, 0)')
+    })
+
+}
+
+const chooseColor = (rgb) =>{
+    //assign the color the wild card used
+    discardDeck[discardDeck.length - 1].color = rgb
+
+    //hide the color picker
+    $('.choose-color').fadeTo('fast', 0);
+    colorPickerIsOpen = false;
+    playerTurn = false;
+    /// need to switch over to CPU
+
+    //* 
+}
+
+const skipOrEndTurn =() => {
+    // this will be used in the event of skip, reverse card being used
+    if (discardDeck[discardDeck.length - 1].changeTurn === true){
+        playerTurn = false;
+    }
+
+    // Start the CPU to play
+
+    //*
+}
+
+const turnIdentifier = () => {
+    if (playerTurn === true) {
+        $('.player-name').css('color','red').css('font-size','30px').css('text-align', 'center');
+        $('.cpu-name').css('color','white').css('font-size','20px').css('text-align', 'center');
+    } else {
+        $('.cpu-name').css('color','red').css('font-size','30px').css('text-align', 'center');
+        $('.player-name').css('color','white').css('font-size','20px').css('text-align', 'center');
+    }
+}
+
+//* End of Functions
+
+
+// start of game loops
+
+const checkWinner = () =>{
+    if(playerHand.length === 0) {
+        endRound(playerHand);
+    }
+    if(cpuHand.length === 0) {
+        endRound(cpuHand);
+    }
+    else {
+        // game gameover
+        endgame();
+    }
+
+}
+
+const showCpuCard = () =>{
+        $('.cpu-hand').remove();
+        const $cpuCard = $('<div>').addClass('cpu-hand');
+        $('.cpu-box').append($cpuCard);
+        for (let i=0; i<= cpuHand.length-1; i++){
+            $cpuCard.append($('<img>').attr("src", `${cpuHand[i].src}`))
+        } 
+}
+
+// const endRound = () => {
+//     gameOn = false;
+//     playerTurn = false;
+
+//     if (cpuHand.length > 0) {
+//         showCpuCard()
+//     }
+//     // const endOfroundDom = document.querySelector('.end-of-round')
+//     // const roundDom = document.querySelector('.round')
+    
+//     // // show end of round element & format it based on who won
+//     // endOfroundDom.classList.remove('hidden')
+//     // if (winner === playerHand) roundDom.textContent = 'You won the round!'
+//     // else roundDom.textContent = 'CPU won the round...'
+    
+//     // // hide end of round element after 2 seconds
+//     // setTimeout(() => {
+//     //     endOfroundDom.classList.add('hidden')
+//     //     playerTurn = !playerTurn
+//     //     newHand()
+//     //     if (!playerTurn) setTimeout(playCPU, cpuDelay)
+        
+//     // }, 3000)
+// }
+
+const endGame = () => {
+    gameOn = false;
+    if (cpuHand.length > 0 && playerHand.length === 0 ) {
+        showCpuCard();
+        console.log("Player has won the round")
+    }
+    if (cpuHand.length === 0 && playerHand.length > 0){
+        conosle.log("Cpu has won the round")
+    }
+}
+
+
+/// player selection process function
 
 
 
@@ -207,16 +340,40 @@ const drawCard = (whoToGetCard) =>{
 
 
 
+const gameStart = () =>{
+
+    playerTurn = true; //The player will be playing in this round when
+    gameOn = true; // is the game still on
+    colorPickerIsOpen = false;
 
 
-const main = () =>{
     createDeck()
     shuffleDeck(drawDeck)
     dealCards()
     startPlayDiscard()
-    drawCard(cpuHand)
+    //drawCard(cpuHand)
+    colorSelector()
+    turnIdentifier()
+    showCpuCard()
+    
+    console.log(discardDeck[discardDeck.length-1])
+
+    const $playerhand = $(".playerHandCard")
+
+    $playerhand.on('click', (event) => {
+
+    } 
+
+    
+
+ }
+
+$(gameStart)
 
 
-}
 
-$(main)
+
+for (let i = 0; i< playerHand.length; i++){
+    if(playerHand[i].src.split('/').at(-1) === `${event.currentTarget.src.split('/').at(-1)}`) {
+    console.log(playerHand[i]);
+    break;

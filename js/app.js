@@ -50,8 +50,8 @@ const createCardGroup =(rgb, color) => {
         }
         // this is for the +2 cards
         if (i === 12){
-            drawDeck.push(new Card(rgb, i, false, 0, 'images/' + color + i + '.png'));
-            drawDeck.push(new Card(rgb, i, false, 0, 'images/' + color + i + '.png'));
+            drawDeck.push(new Card(rgb, i, false, 2, 'images/' + color + i + '.png'));
+            drawDeck.push(new Card(rgb, i, false, 2, 'images/' + color + i + '.png'));
         }
         // wild color
         if(i === 13){
@@ -60,7 +60,7 @@ const createCardGroup =(rgb, color) => {
         }
         // wild +4
         if(i === 14) {
-            drawDeck.push(new Card (rgb, i, false, 0, 'images/wild' + i + '.png'));
+            drawDeck.push(new Card (rgb, i, false, 4, 'images/wild' + i + '.png'));
         }
         
     }
@@ -365,33 +365,211 @@ const updateHand = (hands,array,value ) => {
 //     } 
 // }
 
+//! CPU LOGIC AND AUTOMATED GAME PLAY
+////////////////////////////////////////////////////////////////////////////////////////////////
+const letCpuDrawCards = () => {
+    if (drawDeck[discardDeck.length - 1].drawValue > 0) {
+        // add however many cards based on drawValue of last played card
+        for (let i = 0; i < playPile[drawDeck.length - 1].drawValue; i++) {
+            drawCard(cpuHand)
+        }
+    }
+}
 
+const playCPU = () => {   
+    if (!playerTurn && gameOn === true) {
+        console.log('cpu beginning turn') // TODO: remove
 
+        // create temp array of playable cards based on last card played
+        const playable = determinePlayableCards()
 
+        // if no playable cards
+        if (playable.length === 0) {
+            console.log('CPU has no cards to play') // TODO: remove
+            // draw card
+            drawCard(cpuHand)
+            // end turn
+            setTimeout(() => {
+                console.log('CPU ending turn') // TODO: remove
+                playerTurn = true
+                return
+            }, 500)
+        }
+        // if one playable card is playble card 
+        else if (playable.length === 1) {
+            playCPUCard(playable[0])
+        }
 
+        // if more than one playable cards
+        else if (playable.length > 1) {
+            console.log('cpu has', playable.length, 'playable cards')
+            
+            let chosenCard = runtatics(playable)
+            playCPUCard(chosenCard)
+            
+            //playCPUCard(chosenCard)
+        }
+    }
 
+    /////////// CPU FUNCTIONS
+    function determinePlayableCards() {
+        const playableCards = []
 
+        console.log('last card played:') // TODO: remove
+        console.log(discardDeck[discardDeck.length - 1])
+        for (let i = 0; i < cpuHand.length; i++) {
+            if (cpuHand[i].color === discardDeck[discardDeck.length - 1].color || cpuHand[i].value === discardDeck[discardDeck.length - 1].value || cpuHand[i].color === 'any' || discardDeck[discardDeck.length - 1].color === 'any') {
+                let validCard = cpuHand.splice(i, 1)
+                playableCards.push(validCard[0])
+            }
+        }
+        console.log('playable cards:')
+        console.log(playableCards) // TODO: remove
+        
+        return playableCards
+    }
+  
+    function runtatics(playable) {
+        let cardIndex = 0
+            
+        // run strategist to determine strategy
+        let strategist = Math.random()
+        console.log('strategist:', strategist) // TODO: remove
+        // if strategist > 0.5 || playerHand <= 3
+        if (discardDeck.length > 2 && (strategist > 0.7 || playerHand.length < 3 || cpuHand.length > (playerHand.length * 2) || (discardDeck[discardDeck.length - 1].playedByPlayer === true && discardDeck[discardDeck.length - 1].drawValue > 0) || (discardDeck[discardDeck.length - 2].playedByPlayer === true && drawDeck[drawDeck.length - 1].drawValue > 0))) {
+            // prioritize action/high point cards
+            console.log('cpu chose high card') // TODO: remove
+            let highestValue = 0
 
+            for (let i = 0; i < playable.length; i++){
+                if (playable[i].value > highestValue) {
+                    highestValue = playable[i].value
+                    cardIndex = i
+                }
+            }
+            // play card determined by strategist
+            // remove card from playable
+            chosenCard = playable.splice(cardIndex, 1)
 
+            // return playable to cpuHand
+            returnPlayablesToHand()
+    }
+        else {
+            // else prioritize color || number cards
+            console.log('cpu chose low card') // TODO: remove
+            let lowestValue = 14
 
+            for (let i = 0; i < playable.length; i++){
+                if (playable[i].value < lowestValue) {
+                    lowestValue = playable[i].value
+                    cardIndex = i
+                }
+            }
 
+            // play card determined by strategist
+            // remove card from playable
+            chosenCard = playable.splice(cardIndex, 1)
 
+            returnPlayablesToHand()           
+        }
 
+        console.log(chosenCard[0])  // TODO: remove
+        return chosenCard[0]
 
+        function returnPlayablesToHand() {
+            if (playable.length > 0) {
+                for (const card of playable) {
+                    cpuHand.push(card)
+                }
+            }
+        }
+    }
 
+    function playCPUCard(chosenCard) {
+        console.log('playing card:') // TODO: remove
+        console.log(chosenCard)
 
+        // push the selected card to the discardDeck
 
+        discardDeck.push(chosenCard)
+        updateDiscardPile()
 
+        // check if cpu play any wild cards
+        if (discardDeck[discardDeck.length - 1].value === 13 && discardDeck[discardDeck.length - 1].drawValue === 0){
+            console.log('CPU played a wild card:') // TODO: remove
+            chooseColorAfterWild();
+        }
+        // check if cpu play wild card +4
+        // if (discardDeck[discardDeck.length - 1].value === 14 && discardDeck[discardDeck.length - 1].drawValue === 4){
+        //     console.log('CPU play +4 wild card')
+        //     chooseColorAfterWild();
+        //     for (i = 0; i <5; i++) {
+        //         drawCard(playerHand);
+        //         showplayerCard() 
+        //     }
+        // }
 
+        if (cpuHand.length >= 1){
+            showCpuBackCard()
+            if (cpuHand.length===1){
+                showUno(cpuUno)
+            }
+        }
 
+        else{
+            showCpuBackCard()
+        }
 
+        // if cpu draws a card
+        if (chosenCard.drawValue > 0){
+            // alert('cpu played a +' + chosenCard.drawValue)
+            // check if cpu play wild card +4
+            for (i = 0; i < chosenCard.drawValue; i++) {
+                drawCard(playerHand);
+                showplayerCard()
+            }
+            checkChangeTurn();
+        }
+        else checkChangeTurn();
 
+        function checkChangeTurn() {
+            if (chosenCard.changeTurn === true) {
+                // if changeTurn, playerTurn = true
+                console.log('cpu has finished its turn') // TODO: remove
+                playerTurn = true
+                return
+            }
+            else {
+                // else cpuTurn() again
+                console.log('cpu goes again') // TODO: remove
+                playCPU()
+            }
+        }
+    }
+    function chooseColorAfterWild() {
+        console.log('cpu picking new color') // TODO: remove
+        const colors = ['rgb(255, 6, 0)', 'rgb(0, 170, 69)', 'rgb(0, 150, 224)', 'rgb(255, 222, 0)']
+        const colorsInHand = [0, 0, 0, 0]
 
+        // cpu checks how many of each color it has
+        for (const card of cpuHand) {
+            if (card.color === colors[0]) colorsInHand[0]++
+            if (card.color === colors[1]) colorsInHand[1]++
+            if (card.color === colors[2]) colorsInHand[2]++
+            if (card.color === colors[3]) colorsInHand[3]++
+        }
 
+        // find the index of the max value
+        let indexOfMax = colorsInHand.indexOf(Math.max(...colorsInHand))
 
-
-
-
+        // style the wild card and it's color
+        // const wildCardDom = playPileDom.childNodes[0]
+        // wildCardDom.style.border = '5px solid ' + colors[indexOfMax]
+        // wildCardDom.style.width = '105px'
+        discardDeck[discardDeck.length - 1].color = colors[indexOfMax]
+    }
+    //#endregion
+}
 
 
 
@@ -422,6 +600,9 @@ turnIdentifier()
 
 //!USER LOGIC PROCESSING
 ////////////////////////////////////////////////////////////////////////////////////////////////
+const inital =() => {
+
+}
 const $playerhand = $(".playerHandCard")
 $playerhand.on('click', (event) => {
     let x = []
@@ -456,7 +637,7 @@ $playerhand.on('click', (event) => {
 
         playerTurn = false;
         turnIdentifier();
-    //     // Play CPU
+        playCPU()
 
 
     // //     $playerhand.remove(even.currentTarget)
@@ -512,6 +693,7 @@ $playerhand.on('click', (event) => {
         //console.log(cpuHand)
         playerTurn = false;
         turnIdentifier();
+        playCPU()
         
     
     } else if ((x[0].value === 13)){
@@ -535,6 +717,7 @@ $playerhand.on('click', (event) => {
         
         playerTurn = false;
         turnIdentifier();
+        playCPU()
     
     
     } else if ((x[0].value === 14)){
@@ -564,6 +747,7 @@ $playerhand.on('click', (event) => {
         // console.log(cpuHand)
         playerTurn = false;
         turnIdentifier();
+        playCPU()
     
 
 
@@ -574,12 +758,10 @@ $playerhand.on('click', (event) => {
         });
         showplayerCard()
         playerTurn = false; 
+        playCPU()
      }
     
 }) 
-
-
-
 
 
 // 

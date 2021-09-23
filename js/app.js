@@ -1,32 +1,31 @@
+/////////////////////////////////////////////////////////////////
+//! Setting up Global Variables
+//////////////////////////////////////////////////////////////
 
+const CPUHAND = []; // this will be use as the CPU handcard
+const PLAYERHAND =[]; // this will be use as the PLAYER handcard
+const drawDeck = []; // this will be use as the Fresh pile of cards
+const discardDeck =[]; // this will be use as the discard pile of cards
 
-//Global Variables 
-
-const cpuHand = []; //store the cards that cpu have on hand
-const playerHand = []; //store the cards that cpu have on hand
-
-const drawDeck = []; //store the full cards to play
-const discardDeck =[]; //store the cards that has been discarded
-
-let cpuScore = 0;
-let playerScore = 0;
-
-// Variables to change during the game
-let playerTurn = true; //The player will be playing in this round when
-let gameOn = true; // is the game still on
+// Variables that needs to be change throughout the game
+let playerTurn = true;
+let gameOn = true;
 let colorPickerIsOpen = false;
-let gameOver = 0
-let cpuDelay = Math.floor((Math.random() * cpuHand.length * 200) + 1500);
+let delayTurn = (Math.floor(Math.random()* CPUHAND.length * 150) + 2000);
+
+let playerScore = 0;
+let cpuScore = 0;
 
 
-// Cards & DrawDecks =======================================
-// Setting up game components
+/////////////////////////////////////////////////////////////////
+//! Setting up drawDeck and DiscardDeck
+//////////////////////////////////////////////////////////////
 class Card {
     constructor(rgb, value, changeTurn, drawValue, imgSrc) {
         this.color = rgb
         this.value = value
-        this.changeTurn = changeTurn
-        this.drawValue = drawValue
+        this.changeTurn = changeTurn // mainly use for power cards to reverse or change
+        this.drawValue = drawValue // This will be the card that decide how many coards the opponent needs to draw 
         this.src = imgSrc
         this.playedByPlayer = false
     }
@@ -55,12 +54,12 @@ const createCardGroup =(rgb, color) => {
         }
         // wild color
         if(i === 13){
-            drawDeck.push(new Card (rgb, i, false, 0, 'images/wild' + i + '.png'));
+            drawDeck.push(new Card ('any', i, false, 0, 'images/wild' + i + '.png'));
 
         }
         // wild +4
         if(i === 14) {
-            drawDeck.push(new Card (rgb, i, false, 4, 'images/wild' + i + '.png'));
+            drawDeck.push(new Card ('any', i, false, 4, 'images/wild' + i + '.png'));
         }
         
     }
@@ -83,9 +82,7 @@ const createDeck = () => {
         else {
             createCardGroup('rgb(255, 222, 0)', 'yellow');
         }
-     }
-
-    console.log(drawDeck.length)
+    }
 }
 
 const shuffleDeck = (drawDeck) => {
@@ -97,11 +94,12 @@ const shuffleDeck = (drawDeck) => {
     }
     console.log("Deck Shuffled!")
 }
-// End of game set-up process
 
+/////////////////////////////////////////////////////////////////
+//! Setting up Game Behaviours
+//////////////////////////////////////////////////////////////
 
-//* Game Functions
-
+////// mainly in the deal area
 const dealCards = () => {
     const $cpuCard = $('<div>').addClass('cpu-hand');
     $('.cpu-box').append($cpuCard);
@@ -110,50 +108,50 @@ const dealCards = () => {
     
     for (i = 0; i < 7; i++){
         // #region GAME behaviors
-        cpuHand.push(drawDeck.shift());
-        cpuHand[i].id = `${i}`;
-        playerHand.push(drawDeck.shift());
-        playerHand[i].id = `${i}`;
+        CPUHAND.push(drawDeck.shift());
+        CPUHAND[i].id = `${i}`;
+        PLAYERHAND.push(drawDeck.shift());
+        PLAYERHAND[i].id = `${i}`;
 
         // place image in the front-end for the cpu (back-face of the uno card)
         $cpuCard.append($('<img>').attr('src',"images/back.png"))
 
     // place image on the front-end for the player(front-end of the uno card based on the value)
-        $playerHand.append($('<img>').attr('src', `${playerHand[i].src}`).addClass('playerHandCard').attr('id',`${i}`))
+        $playerHand.append($('<img>').attr('src', `${PLAYERHAND[i].src}`).addClass('playerHandCard').attr('id',`${i}`))
     }
-    $('#cpuNumberCards').text(`${cpuHand.length}`);
-    
+    $('#cpuNumberCards').text(`${CPUHAND.length}`);
 }
 
 const startPlayDiscard = () =>{
     const $discardDeck = $('<div>').addClass('discard-Deck')
     $('.deal-area').append($discardDeck)
     for(let i = 0; i < drawDeck.length; i++ ){
-        if( drawDeck[i].color !=="any" && drawDeck[i].value <9){
+        if( drawDeck[i].color !=="any" && drawDeck[i].value <10){
             //being playing the game with the first valid card
             discardDeck.push(drawDeck[i])
             drawDeck.splice(i,1)
             break
         }
     }
-    
-    $discardDeck.append($('<img>').attr('src', `${discardDeck[0].src}`))
-    console.log(discardDeck)
-    console.log(drawDeck.length)
+    $discardDeck.append($('<img>').attr('src', `${discardDeck[discardDeck.length - 1].src}`))
+    //* console.log(discardDeck)
+    //* console.log(drawDeck.length)
 }
 
-const newGame = () => {
-    console.log('Lets go, new round')
-    gameOn = true
-    // clear hands and play pile
+const newGameRound = () => {
+    // this is for users to play another round (refresh)
+    console.log("begin of new round")
+    gameOn = true; // is the game still on
+    // clear out cards on hand
     $('.cpu-hand').remove()
-    cpuHand.length = 0
+    CPUHAND.length = 0
     $('.player-hand').remove()
-    playerHand.length = 0
+    PLAYERHAND.length = 0
     $('.discard-Deck').remove()
     discardDeck.length = 0
 
     // create new deck
+    // the previous deck of card will be rest
     createDeck()
     // shuffle deck
     shuffleDeck(drawDeck)
@@ -162,7 +160,9 @@ const newGame = () => {
     // set down first play card that isn't an action card
     startPlayDiscard()
 
-    if (colorPickerIsOpen) hideColorPicker()
+    if (colorPickerIsOpen === true){
+        hideColorPicker()
+    } 
 }
 
 const updateDiscardPile = () =>{
@@ -193,10 +193,21 @@ const drawCard = (whoToGetCard) =>{
         const newCard = drawDeck.shift()
         whoToGetCard.push(newCard);
         console.log(whoToGetCard, "drew one card") 
-        console.log(whoToGetCard.length)
     }
 }
 
+const showUno = (winningHand) => {
+    // create uno! sign
+    if (winningHand === PLAYERHAND){
+        $('.player-area').append($('<img>').attr('src','images/uno!.png').attr('id', 'uno'))
+    }
+    else{
+        $('.cpu-box').append($('<img>').attr('src','images/uno!.png').attr('id', 'uno'))
+    }
+
+}
+
+///////////// player area function 
 const colorSelector = () =>{
     // show the color picker
     const $colorPicker = $('.choose-color')
@@ -233,23 +244,24 @@ const chooseColor = (rgb) =>{
     discardDeck[discardDeck.length - 1].color = rgb
 
     //hide the color picker
-    $('.choose-color').hide();
-    colorPickerIsOpen = false;
+    hideColorPicker(); //hide the color bar
     playerTurn = false;
+    
     /// need to switch over to CPU
+    setTimeout(playCPU, delayTurn)
 
-    //* 
+}
+
+const hideColorPicker = () => {
+    $('.choose-color').hide();
 }
 
 const skipOrEndTurn =() => {
-    // this will be used in the event of skip, reverse card being used
     if (discardDeck[discardDeck.length - 1].changeTurn === true){
-        playerTurn = false;
+        playherHand = false;
+
+        setTimeout(playCPU, delayTurn);
     }
-
-    // Start the CPU to play
-
-    //*
 }
 
 const turnIdentifier = () => {
@@ -262,221 +274,223 @@ const turnIdentifier = () => {
     }
 }
 
-//* End of Functions
 
-
-// start of game loops
-
-const checkWinner = () =>{
-    if(playerHand.length === 0) {
-        endRound(playerHand);
+/// END OF ROUND AND END OF GAME FUNCTIONS
+const pointsCalculation = () => {
+    if (PLAYERHAND.length === 0 && CPUHAND.length !== 0) {
+        playerScore ++
+    } else if(CPUHAND.length === 0 && PLAYERHAND.length !==0) {
+        cpuScore ++
     }
-    if(cpuHand.length === 0) {
-        endRound(cpuHand);
+}
+
+const checkForWinners = () => {
+    if (playerScore <= 3 && cpuScore <= 3){
+        if (PLAYERHAND.length === 0 && playerScore === 3){
+            endRound(PLAYERHAND)
+        }
+
     }
+    if (CPUHAND.length === 0 && Score === 3){
+        endRound(CPUHAND)
+    }
+
     else {
-        // game gameover
         endgame();
     }
-
+    
 }
 
 const showCpuCard = () =>{
-        $('.cpu-hand').remove();
-        const $cpuCard = $('<div>').addClass('cpu-hand');
-        $('.cpu-box').append($cpuCard);
-        for (let i=0; i<= cpuHand.length-1; i++){
-            $cpuCard.append($('<img>').attr("src", `${cpuHand[i].src}`))
-        } 
+    $('.cpu-hand').remove();
+    const $cpuCard = $('<div>').addClass('cpu-hand');
+    $('.cpu-box').append($cpuCard);
+    for (let i=0; i<= CPUHAND.length-1; i++){
+        $cpuCard.append($('<img>').attr("src", `${CPUHAND[i].src}`))
+    } 
 }
 
 const showCpuBackCard = () =>{
     $('.cpu-hand').remove();
     const $cpuCard = $('<div>').addClass('cpu-hand');
     $('.cpu-box').append($cpuCard);
-    for (let i=0; i<= cpuHand.length-1; i++){
+    for (let i=0; i<= CPUHAND.length-1; i++){
         $cpuCard.append($('<img>').attr("src", "images/back.png"))
     } 
 }
 
-const showplayerCard = () => {
+const showPlayerCard = () => {
     $('.player-hand').remove();
     const $playerhand = $('<div>').addClass('player-hand')
     $('.player-area').append($playerhand);
-    for (let i = 0; i < playerHand.length; i++){
-        $playerhand.append($('<img>').attr("src", `${playerHand[i].src}`).addClass('playerHandCard').attr('id',`${i}`))
+    for (let i = 0; i < PLAYERHAND.length; i++){
+        $playerhand.append($('<img>').attr("src", `${PLAYERHAND[i].src}`).addClass('playerHandCard').attr('id',`${i}`))
     }
 }
 
-// const endRound = () => {
-//     gameOn = false;
-//     playerTurn = false;
+const endRound =(winner) => {
+    console.log('Round over', winner)
+    gameOn = false;
+    if (CPUHAND.length > 0) {
+        showCpuCard();
+    }
 
-//     if (cpuHand.length > 0) {
-//         showCpuCard()
-//     }
-//     // const endOfroundDom = document.querySelector('.end-of-round')
-//     // const roundDom = document.querySelector('.round')
-    
-//     // // show end of round element & format it based on who won
-//     // endOfroundDom.classList.remove('hidden')
-//     // if (winner === playerHand) roundDom.textContent = 'You won the round!'
-//     // else roundDom.textContent = 'CPU won the round...'
-    
-//     // // hide end of round element after 2 seconds
-//     // setTimeout(() => {
-//     //     endOfroundDom.classList.add('hidden')
-//     //     playerTurn = !playerTurn
-//     //     newHand()
-//     //     if (!playerTurn) setTimeout(playCPU, cpuDelay)
-        
-//     // }, 3000)
-// }
+    if (winner === PLAYERHAND){
+        console.log('you won this round');
+    }
+    else {
+        console.log('Computer Won this round');
+    }
+
+    playerturn = !playerturn
+    newGameRound();
+    if(playerturn != playerturn){
+        setTimeout(playCPU, delayTurn)
+    }
+}
 
 const endGame = () => {
+    // end of the game
     gameOn = false;
-    if (cpuHand.length > 0 && playerHand.length === 0 ) {
+    if (CPUHAND.length > 0) {
         showCpuCard();
-        console.log("Player has won the round")
     }
-    if (cpuHand.length === 0 && playerHand.length > 0){
-        conosle.log("Cpu has won the round")
+
+    if(playerScore === 3){
+        console.log("Congrats on winning the game! Play Again?")
     }
+    else {
+        console.log("CPU won the game! Play Again?")
+    }
+     // add event listener to 'play again' button
+    //  document.querySelector('.play-again').addEventListener('click', () => {
+    //     playAgain.play()
+    //     // hide end of game element on click
+    //     endOfGameDom.classList.add('hidden')
+    //     playerScore = 0
+    //     cpuScore = 0
+    //     updateScores()
+    //     playerTurn = !playerTurn
+    //     newHand()
+    //     if (!playerTurn) setTimeout(playCPU, cpuDelay)
+    // })
 }
 
-
-/// player selection process function
-
-const updateHand = (hands,array,value ) => {
-    //console.log(array)
-    updatedCards = hands.filter(array => array.id !== value)
-    //console.log(updatedCards)
-    return updatedCards
-}
-
-
-// const conditionChecker =() => {
-//     for (let i = 0; i<playerHand.length; i++){
-        
-//     }
-//     if(playerHand.value === discardDeck[discardDeck.length - 1].value || playerHand.color === discardDeck[discardDeck.length - 1].color || playerHand.value >= 10){
-//         console.log("inital user turn")
-//         return true
-//     } 
-// }
-
+/////////////////////////////////////////////////////////////////
 //! CPU LOGIC AND AUTOMATED GAME PLAY
-////////////////////////////////////////////////////////////////////////////////////////////////
-const letCpuDrawCards = () => {
+//////////////////////////////////////////////////////////////
+// This is to check if there are any +2 cards or +4 cards in the deck that needs to be taken care off
+const letCpuDrawPowerCards = () => {
     if (drawDeck[discardDeck.length - 1].drawValue > 0) {
         // add however many cards based on drawValue of last played card
-        for (let i = 0; i < playPile[drawDeck.length - 1].drawValue; i++) {
-            drawCard(cpuHand)
+        for (let i = 0; i < drawDeck[drawDeck.length - 1].drawValue; i++) {
+            drawCard(CPUHAND)
         }
     }
 }
 
 const playCPU = () => {   
+    // the main CPU processing logic for the overall game
     if (!playerTurn && gameOn === true) {
-        console.log('cpu beginning turn') // TODO: remove
+        console.log('cpu beginning turn')
 
         // create temp array of playable cards based on last card played
-        const playable = determinePlayableCards()
+        const playableCards = determinePlayableCards()
 
-        // if no playable cards
-        if (playable.length === 0) {
-            console.log('CPU has no cards to play') // TODO: remove
-            // draw card
-            drawCard(cpuHand)
-            // end turn
+        // if there is no playable cards available
+        if(playableCards.length === 0){
+            console.log("Cpu Draw Cards")
+            // draw cards
+            drawCard(CPUHAND);
+            showCpuBackCard();
             setTimeout(() => {
-                console.log('CPU ending turn') // TODO: remove
-                playerTurn = true
-                return
-            }, 500)
+                playerTurn = true;
+            },100);
         }
-        // if one playable card is playble card 
-        else if (playable.length === 1) {
-            playCPUCard(playable[0])
+        // if there are 1 card that the CPU can play
+        else if(playableCards.length === 1){
+            playCpuCard(playable[0])
+            setTimeout(() =>{
+                playerTurn = true;
+            },100);
         }
-
-        // if more than one playable cards
+        // if there are more than one playable card
         else if (playable.length > 1) {
-            console.log('cpu has', playable.length, 'playable cards')
-            
             let chosenCard = runtatics(playable)
-            playCPUCard(chosenCard)
-            
-            //playCPUCard(chosenCard)
+            playCpuCard(chosenCard)
+            // setTimeout(() =>{
+            //     playerTurn = true;
+            // },100)
+        
         }
     }
+// CPU FUNCTIONS
+    const determinePlayableCards = () => {
+        const playableCards = [];
 
-    /////////// CPU FUNCTIONS
-    function determinePlayableCards() {
-        const playableCards = []
-
-        console.log('last card played:') // TODO: remove
-        console.log(discardDeck[discardDeck.length - 1])
-        for (let i = 0; i < cpuHand.length; i++) {
-            if (cpuHand[i].color === discardDeck[discardDeck.length - 1].color || cpuHand[i].value === discardDeck[discardDeck.length - 1].value || cpuHand[i].color === 'any' || discardDeck[discardDeck.length - 1].color === 'any') {
-                let validCard = cpuHand.splice(i, 1)
+        console.log(discardDeck[discardDeck.length - 1]);
+        for (let i = 0; i< CPUHAND.length; i++) {
+            if (CPUHAND[i].color === discardDeck[discardDeck.length - 1].color || CPUHAND[i].value === discardDeck[discardDeck.length-1].value || CPUHAND[i].color === 'any' || discardDeck[discardDeck.length-1].value ==="any") {
+                let validCard = CPUHAND.splice(i,1)
                 playableCards.push(validCard[0])
             }
         }
-        console.log('playable cards:')
-        console.log(playableCards) // TODO: remove
-        
+        console.log(playableCards)
         return playableCards
     }
-  
-    function runtatics(playable) {
-        let cardIndex = 0
-            
-        // run strategist to determine strategy
-        let strategist = Math.random()
-        console.log('strategist:', strategist) // TODO: remove
-        // if strategist > 0.5 || playerHand <= 3
-        if (discardDeck.length > 2 && (strategist > 0.7 || playerHand.length < 3 || cpuHand.length > (playerHand.length * 2) || (discardDeck[discardDeck.length - 1].playedByPlayer === true && discardDeck[discardDeck.length - 1].drawValue > 0) || (discardDeck[discardDeck.length - 2].playedByPlayer === true && drawDeck[drawDeck.length - 1].drawValue > 0))) {
-            // prioritize action/high point cards
-            console.log('cpu chose high card') // TODO: remove
-            let highestValue = 0
 
-            for (let i = 0; i < playable.length; i++){
+    const runtactics =(playable) =>{
+        let cardIndex = 0;
+        const playableCards = [];
+
+        let strategy = Math.random();
+        //if there are more than 2 cards in the discard deck
+        // player only have 3 cards on hand now
+        // the number of cards that the CPU have 2 times more than the player
+        // the users has used power cards that are +2 or +4 wild
+        // which means that the CPU needs to clear up the strongest card
+        // the play has used 2 time in a row of powercards {
+        if (discardDeck.length > 2 && 
+            (strategy > 0.7 ||
+            PLAYERHAND.length < 3 || 
+            CPUHAND.length > (PLAYERHAND.length * 2) ||
+            (discardDeck[discardDeck.length - 1].playedByPlayer === true && discardDeck[discardDeck.length - 1].drawValue > 0) || 
+            (discardDeck[discardDeck.length - 1].playedByPlayer === true && discardDeck[discardDeck.length - 1].drawValue > 0))) {
+            let highestValueCard = 0;
+
+            for (let i = 0; playable.length; i++){
                 if (playable[i].value > highestValue) {
                     highestValue = playable[i].value
                     cardIndex = i
                 }
             }
-            // play card determined by strategist
-            // remove card from playable
-            chosenCard = playable.splice(cardIndex, 1)
+            
+            // will play card determined by the strategy and remove it from the playable c
+            chosenCard = playable.splice(cardIndex,1)
+            console.log(chosenCard)
 
-            // return playable to cpuHand
+            // return playable to cpuhand
             returnPlayablesToHand()
     }
-        else {
-            // else prioritize color || number cards
-            console.log('cpu chose low card') // TODO: remove
-            let lowestValue = 14
-
-            for (let i = 0; i < playable.length; i++){
-                if (playable[i].value < lowestValue) {
-                    lowestValue = playable[i].value
-                    cardIndex = i
-                }
+    else {
+        let lowestValue = 14;
+        for (let i = 0; i < playable.length; i++){
+            if (playable[i].value < lowestValue) {
+                lowestValue = playable[i].value
+                cardIndex = i
             }
+        }
 
             // play card determined by strategist
             // remove card from playable
             chosenCard = playable.splice(cardIndex, 1)
-
-            returnPlayablesToHand()           
+           
+            returnPlayablesToHand()   
         }
 
-        console.log(chosenCard[0])  // TODO: remove
         return chosenCard[0]
 
-        function returnPlayablesToHand() {
+        const returnPlayablesToHand=() =>{
             if (playable.length > 0) {
                 for (const card of playable) {
                     cpuHand.push(card)
@@ -484,289 +498,172 @@ const playCPU = () => {
             }
         }
     }
+    const playCpuCard = (chosenCard) => {
+        console.log(chosenCard);
 
-    function playCPUCard(chosenCard) {
-        console.log('playing card:') // TODO: remove
-        console.log(chosenCard)
-
-        // push the selected card to the discardDeck
-
+        // Add the chosen card into the discard pile of cards
         discardDeck.push(chosenCard)
         updateDiscardPile()
-
-        // check if cpu play any wild cards
-        if (discardDeck[discardDeck.length - 1].value === 13 && discardDeck[discardDeck.length - 1].drawValue === 0){
-            console.log('CPU played a wild card:') // TODO: remove
+    
+        // check if the chosen card is wild card
+        if(discardDeck[discardDeck.length - 1].color =='any' && discardDeck[discardDeck.length - 1].value === 0 && discardDeck[discardDeck.length - 1].playedByPlayer === false) {
             chooseColorAfterWild();
         }
-        // check if cpu play wild card +4
-        // if (discardDeck[discardDeck.length - 1].value === 14 && discardDeck[discardDeck.length - 1].drawValue === 4){
-        //     console.log('CPU play +4 wild card')
-        //     chooseColorAfterWild();
-        //     for (i = 0; i <5; i++) {
-        //         drawCard(playerHand);
-        //         showplayerCard() 
-        //     }
-        // }
 
-        if (cpuHand.length >= 1){
+        // check cpuHand length and update cpuHandDom
+        if (CPUHAND.length >= 1){
             showCpuBackCard()
-            if (cpuHand.length===1){
-                showUno(cpuUno)
+            if (CPUHAND.length===1) {
+                showUno(CPUHAND);
             }
         }
-
-        else{
-            showCpuBackCard()
+        else {
+            pointsCalculation()
+            checkForWinners()
         }
 
-        // if cpu draws a card
+        // if cpu played a +2 card
         if (chosenCard.drawValue > 0){
-            // alert('cpu played a +' + chosenCard.drawValue)
-            // check if cpu play wild card +4
-            for (i = 0; i < chosenCard.drawValue; i++) {
-                drawCard(playerHand);
-                showplayerCard()
+            for (let i = 0; i < chosenCard.drawValue; i++) {
+                drawCard(PLAYERHAND)
             }
-            checkChangeTurn();
+            checkChangeTurn()
         }
-        else checkChangeTurn();
 
-        function checkChangeTurn() {
-            if (chosenCard.changeTurn === true) {
-                // if changeTurn, playerTurn = true
-                console.log('cpu has finished its turn') // TODO: remove
-                playerTurn = true
+        else {
+            setTimeout(checkChangeTurn,1000)
+        }
+        
+        const checkChangeTurn = () => {
+            if (chosenCard.changeTurn === true){
+                console.log("CPU turn over")
+                playerTurn = true;
                 return
             }
-            else {
-                // else cpuTurn() again
-                console.log('cpu goes again') // TODO: remove
-                playCPU()
+            else{
+                console.log("CPU turn")
+                setTimeout(playCPU, delayTurn)
             }
         }
-    }
-    function chooseColorAfterWild() {
-        console.log('cpu picking new color') // TODO: remove
+    }    
+
+
+    const chooseColorAfterWild = () => {
         const colors = ['rgb(255, 6, 0)', 'rgb(0, 170, 69)', 'rgb(0, 150, 224)', 'rgb(255, 222, 0)']
         const colorsInHand = [0, 0, 0, 0]
 
-        // cpu checks how many of each color it has
+        // cpu needs to check now many colors it has on hand
         for (const card of cpuHand) {
-            if (card.color === colors[0]) colorsInHand[0]++
-            if (card.color === colors[1]) colorsInHand[1]++
-            if (card.color === colors[2]) colorsInHand[2]++
-            if (card.color === colors[3]) colorsInHand[3]++
+            if (card.color === colors[0]) {colorsInHand[0]++}
+            if (card.color === colors[1]) {colorsInHand[1]++}
+            if (card.color === colors[2]) {colorsInHand[2]++}
+            if (card.color === colors[3]) {colorsInHand[3]++}
         }
-
         // find the index of the max value
         let indexOfMax = colorsInHand.indexOf(Math.max(...colorsInHand))
 
-        // style the wild card and it's color
-        // const wildCardDom = playPileDom.childNodes[0]
-        // wildCardDom.style.border = '5px solid ' + colors[indexOfMax]
-        // wildCardDom.style.width = '105px'
-        discardDeck[discardDeck.length - 1].color = colors[indexOfMax]
-    }
-    //#endregion
+            // style the wild card and it's color
+            // const wildCardDom = playPileDom.childNodes[0]
+            // wildCardDom.style.border = '5px solid ' + colors[indexOfMax]
+            // wildCardDom.style.width = '105px'
+            playPile[playPile.length - 1].color = colors[indexOfMax]
+        }
+    
+    
 }
 
 
-
-
-
-
-const gameRender = () => {
-    $('.cpu-Box').removeChildren($('.cpu-Box').childNodes);
-    $('.player-area').childNodes().remove();
+/////////////////////////////////////////////////////////////////
+//! USER GAME PLAY
+//////////////////////////////////////////////////////////////
+//this function is to extract the card that is chosen by the player and be placed into the discard deck
+const playPlayerCard = (chosenCard) =>{
+    let cardToPlay = PLAYERHAND.splice(chosenCard,1)
+    let newSet = PLAYERHAND
+    PLAYERHAND.length = 0;
+    cardToPlay[0].playedByPlayer= true;
+    discardDeck.push(cardToPlay[0]);
+    for (let i = 0; i <newSet.length; i++){
+        PLAYERHAND.push(newset[i])
+            PLAYERHAND[i].id = `${i}`
+        }
+    // show the latest card in the discard deck
+    updateDiscardPile();
 }
 
+const playUser = () => {
+    let chosen = 0
+    const $playerhand = $(".playerHandCard")
+    $playerhand.on('click', (event) => {
+        console.log("User Clicked")
+        if (playerTurn == true && !colorPickerIsOpen){
+            for (let i = 0; i < PLAYERHAND.length; i++){
+                if(PLAYERHAND[i].id === `${event.currentTarget.id}`){
+                    chosen = event.currentTarget.id;
+                    break;
+                }
+            }
+            // check if the card against the discardDeck
+            if(PLAYERHAND[chosen].value === discardDeck[discardDeck.length - 1].value || 
+                PLAYERHAND[chosen].value === discardDeck[discardDeck.length - 1].color === discardDeck[discardDeck.length - 1].color ||
+                PLAYERHAND[chosen].value === discardDeck[discardDeck.length - 1].color === 'any'){
 
+                // the chosen card pass the first 3 criteria
+                playPlayerCard(chosen)
 
-const gameStart = () =>{
+                // let CPU drawCards if there are any powercards
+                letCpuDrawCards()
 
-playerTurn = true; //The player will be playing in this round when
-gameOn = true; // is the game still on
-colorPickerIsOpen = false;
+                // check playerhand length and update DOM 
+                if(PLAYERHAND.length >= 1){                                                          // update player hand
+                    showPlayerCard()
+                    if(PLAYERHAND.length === 1) {
+                        showUno(PLAYERHAND);
+                    }
+                }
+                else{
+                    showPlayerCard();
+                    pointsCalculation();
+                    checkForWinners();
+                    }
 
-
-createDeck()
-shuffleDeck(drawDeck)
-dealCards()
-startPlayDiscard()
-//drawCard(cpuHand)
-//colorSelector()
-turnIdentifier()
-//showCpuCard()
-gameRender()
-
-
-//!USER LOGIC PROCESSING
-////////////////////////////////////////////////////////////////////////////////////////////////
-const $playerhand = $(".playerHandCard")
-$playerhand.on('click', (event) => {
-    let x = []
-    let y = 0
-    console.log('this is the playerHand', playerHand)
-    for (let i = 0; i< playerHand.length; i++){
-        //console.log(playerHand[i].src)
-        if(playerHand[i].src.split('/').at(-1) === `${event.currentTarget.src.split('/').at(-1)}`){
-            x.push(playerHand[i])
+                    // check if CPU throws out a wildcard
+                if(discardDeck[discardDeck.length - 1].color === 'any' && discardDeck[discardDeck.length - 1].value === 0 && discardDeck[discardDeck.length - 1].playedByPlayer === false){
+                    // Set new color
+                    colorSelector();
+                    return;
+                }
+                skipOrEndTurn();
+            }
+            else {
+                console.log("Please draw a card")
+                $('#Draw').on('click', () => {
+                    drawCard(PLAYERHAND);
+                    playerTurn = false;
+                    setTimeout(playCPU, delayTurn)
+                })
+            }
         }
+    })
+}
+
+const gameStart = () => {
+    // createDeck()
+    // shuffleDeck(drawDeck)
+    // dealCards()
+    // startPlayDiscard()
+
+    newGameRound();
+    playerScore = 0;
+    cpuScore = 0;
+    pointsCalculation();
+
+
+
+    if (!playerTurn) {
+        settimeout(playCPU, delayTurn);
     }
-    console.log(x);
-    //if (x[0].value === discardDeck[discardDeck.length-1].value || x[0].color === discardDeck[discardDeck.length-1].color || discardDeck[discardDeck.length-1].value > 10) {
-    if (x[0].value === discardDeck[discardDeck.length-1].value || x[0].color === discardDeck[discardDeck.length-1].color && x[0].value <10) {    
-        y = x[0].id
-    //     let z = x[0].src
-        console.log('This is the card Id', y)
-    //     //console.log(playerHand)
-        discardDeck.push(x[0])
-        console.log("this is Discard", discardDeck)
-        updateDiscardPile()
-        const newset = updateHand(playerHand,x,y);
-        console.log('new set', newset)
-        playerHand.length = 0
-        for (let i = 0; i <newset.length; i++){
-            playerHand.push(newset[i])
-            playerHand[i].id = `${i}`
-        }
-        
-         console.log(playerHand)
-         showplayerCard()
-
-        playerTurn = false;
-        turnIdentifier();
-        playCPU()
-
-
-    // //     $playerhand.remove(even.currentTarget)
-    } else if (x[0].color === discardDeck[discardDeck.length-1].color && (x[0].value === 10 || x[0].value === 11)){
-        y = x[0].id
-        console.log('Powercard Selected')
-    //     let z = x[0].src
-        console.log('This is the card Id', y)
-    //     //console.log(playerHand)
-        discardDeck.push(x[0])
-        console.log("this is Discard", discardDeck)
-        updateDiscardPile()
-        const newset = updateHand(playerHand,x,y);
-        console.log('new set', newset)
-        playerHand.length = 0
-        for (let i = 0; i <newset.length; i++){
-            playerHand.push(newset[i])
-            playerHand[i].id = `${i}`
-        }
-        
-         console.log(playerHand)
-         showplayerCard()
-
-         // SKIP computer turn
-
-
-        turnIdentifier();
-
-    } else if (x[0].color === discardDeck[discardDeck.length-1].color && (x[0].value === 12)){
-        y = x[0].id
-        console.log('+2 card Selected')
-    //     let z = x[0].src
-        console.log('This is the card Id', y)
-    //     //console.log(playerHand)
-        discardDeck.push(x[0])
-        console.log("this is Discard", discardDeck)
-        updateDiscardPile()
-        const newset = updateHand(playerHand,x,y);
-        console.log('new set', newset)
-        playerHand.length = 0
-        for (let i = 0; i <newset.length; i++){
-            playerHand.push(newset[i])
-            playerHand[i].id = `${i}`
-        }
-        
-        console.log(playerHand)
-        showplayerCard()
-
-        for (i = 0; i <3; i++) {
-            drawCard(cpuHand);
-        }
-        showCpuBackCard()
-        //console.log(cpuHand)
-        playerTurn = false;
-        turnIdentifier();
-        playCPU()
-        
     
-    } else if ((x[0].value === 13)){
-        y = x[0].id
-        console.log('wild card Selected')
-    //     let z = x[0].src
-        console.log('This is the card Id', y)
-    //     //console.log(playerHand)
-        discardDeck.push(x[0])
-        console.log("this is Discard", discardDeck)
-        updateDiscardPile()
-        const newset = updateHand(playerHand,x,y);
-        console.log('new set', newset)
-        playerHand.length = 0
-        for (let i = 0; i <newset.length; i++){
-            playerHand.push(newset[i])
-            playerHand[i].id = `${i}`
-        }
-        colorPickerIsOpen = true;
-        colorSelector();
-        
-        playerTurn = false;
-        turnIdentifier();
-        playCPU()
-    
-    
-    } else if ((x[0].value === 14)){
-        y = x[0].id
-        console.log('wild card Selected')
-    //     let z = x[0].src
-        console.log('This is the card Id', y)
-    //     //console.log(playerHand)
-        discardDeck.push(x[0])
-        console.log("this is Discard", discardDeck)
-        updateDiscardPile()
-        const newset = updateHand(playerHand,x,y);
-        console.log('new set', newset)
-        playerHand.length = 0
-        for (let i = 0; i <newset.length; i++){
-            playerHand.push(newset[i])
-            playerHand[i].id = `${i}`
-        }
-        colorPickerIsOpen = true;
-        colorSelector();
-        
-
-        for (i = 0; i <5; i++) {
-            drawCard(cpuHand);
-        }
-        showCpuBackCard()
-        // console.log(cpuHand)
-        playerTurn = false;
-        turnIdentifier();
-        playCPU()
-    
-
-
-    }else{
-        console.log("please draw a card");
-        $('#Draw').on('click', ()=>{
-            drawCard(playerHand)
-        });
-        showplayerCard()
-        playerTurn = false; 
-        playCPU()
-     }
-    
-}) 
-
-
-// 
-//     if(playerHand[i].src.split('/').at(-1) === `${event.currentTarget.src.split('/').at(-1)}`) {
-//     console.log(playerHand[i]);
-//     break;
+    playUser();
 }
 $(gameStart)

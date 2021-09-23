@@ -1,63 +1,182 @@
+
+html {
+  font-size: 62.5%;
+}
+
 body {
-    box-sizing: border-box;
-    background-image: url(../images/UNO_back.jpeg);
-    background-repeat: no-repeat;
-    background-size: 100vw 100vh;
-    width: 100vw;
-    height: 100vh;
-    margin: auto;
-    margin-top: 50px;
-    margin-bottom: -50px;
-    
-  }
+  box-sizing: border-box;
+  background-color: rgb(189, 192, 194);
+  background-size: 100vw 100vh;
+  width: 100vw;
+  height: 100vh;
+  margin: auto;
+  margin-top: 50px;
+  margin-bottom: -50px;
+  font-family: 'Avenir Next'
+}
 
-  .cpu-box {
-    display: flex;         
+.cpu-box {
+    display: flex;         /* NEW, Spec - Firefox, Chrome, Opera */
     justify-content: center;
-    margin-right: -30px;
-    margin-bottom: 60px;
+    margin-bottom: 100px;
 }
 
-    .deal-area {
-         display: flex;
-         justify-content: space-evenly;
-}   
 
-
-    .player-area {
-        display: flex;
-        justify-content: center;
-        margin-top: 60px;
-    }
-
-img {
-    width: 100px;
-    margin-left: -30px;
-    border-radius: 10px;
-    box-shadow:  -7px -7px 14px #00405c;
-    filter: blur(0.5px);
+.play-area {
+    display: flex;
+    justify-content: space-evenly;
 }
 
-img:hover{
-    transform: translateY(-10px);
-}
 
-.name {
+
+.score {
     display: flex;
     flex-direction: column;
     margin: auto 0;
-    color: white;
+    color: rgb(189, 192, 194);
     font-size: x-large;
 }
 
 #seperator {
-    display: flex;
     margin: 10px 0;
-    margin-left: -30px;
-    border: 2px solid white;
+    border: 2px solid rgb(8, 81, 140);
 }
 
-.choose-color {
+.player-box {
+    display: flex;
+    justify-content: center;
+    margin-top: 100px;
+}
+
+
+img {
+    width: 100px;
+    margin-left: -28px;
+    border-radius: 10px;
+    box-shadow:  -7px -7px 14px #00405c;
+}
+
+.player-hand img:hover {
+    transform: scale(1.05) translateY(-8px);
+    transition: all 0.1s ease-in-out;
+    cursor: pointer;
+  }
+
+.player-hand img {
+    transition: all 0.1s ease-in-out; 
+}
+
+.draw-pile img:hover {
+    transform: scale(1.1);
+    transition: all 0.1s ease-in-out;
+    cursor: pointer;
+}
+
+.draw-pile img {
+    transition: all 0.1s ease-in-out;
+}
+
+#draw-card {
+    position: absolute;
+    right: 19vw;
+    z-index: 2;
+}
+
+
+.player-animation {
+    position: absolute;
+    z-index: 2;
+    left: 75vw;
+    top: 600px;
+}
+
+.cpu-animation {
+    position: absolute;
+    z-index: 2;
+    left: 75vw;
+    top: 100px;
+}
+
+.play-card {
+    transform: translateY(-260px);
+    transition: 0.3s ease;
+}
+
+.cpu-play-card {
+    transform: translateY(260px);
+    transition: all 0.1s ease-in;
+}
+
+.hidden {
+    display: none;
+}
+
+
+.player-animation img {
+    border-radius: 0px;
+    box-shadow: none;
+    transition: all 1s ease-in-out;
+}
+
+.cpu-animation img {
+    border-radius: 0px;
+    box-shadow: none;
+    transition: all 1s ease-in-out;
+}
+
+.end-of-round {
+    position: absolute;
+    z-index: 2;
+    top: 40vh;
+    left: 35vw;
+    width: 30vw;
+    margin: auto;
+    font-size: xx-large;
+    padding: 100px;
+    padding-top: 50px;
+    border: 5px solid red ;
+    border-radius: 20px;
+    padding: 10px;
+    background-color: black;
+    opacity: 0.9;
+}
+
+.end-of-game {
+    position: absolute;
+    z-index: 2;
+    top: 37vh;
+    left: 30vw;
+    width: 40vw;
+    margin: auto;
+    font-size: xx-large;
+    padding: 100px;
+    padding-top: 50px;
+    border: 5px solid #00eaff;
+    border-radius: 20px;
+    padding: 10px;
+    background-color: black;
+    opacity: 0.9;
+}
+
+.end-of-round p {
+    color: #00eaff;
+    text-align: center;
+}
+
+.end-of-game p {
+    color: #00eaff;
+    text-align: center;
+}
+
+.end-of-game button {
+    background-color: greenyellow;
+    color: black;
+    margin-left: 14vw;
+    margin-top: 10px;
+    
+}
+
+.color-picker {
     display: flex;
     flex-direction: column;
     justify-content: center;
@@ -69,7 +188,7 @@ img:hover{
     opacity: 0;
 }
 
-.choose-color p {
+.color-picker p {
     color: rgb(134, 174, 204);
     font-size: large;
 }
@@ -105,15 +224,19 @@ button:hover {
     color: black;
 }
 
-.player-name {
-    display: flex;
-    align-content: center;
-    font-size: 30px
-
+.player-uno img {
+    border-radius: 0px;
+    box-shadow: none;
 }
 
-.cpu-name {
-    display: flex;
-    align-content: center;
-    font-size: 30px
+.cpu-uno img {
+    border-radius: 0px;
+    box-shadow: none;
+}
+
+.empty {
+    width: 100px;
+    margin-left: -28px;
+    border-radius: 10px;
+    box-shadow:  none;
 }

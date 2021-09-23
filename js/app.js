@@ -254,11 +254,11 @@ const skipOrEndTurn =() => {
 
 const turnIdentifier = () => {
     if (playerTurn === true) {
-        $('.player-name').css('color','red').css('font-size','30px').css('text-align', 'center');
-        $('.cpu-name').css('color','white').css('font-size','20px').css('text-align', 'center');
+        $('.player-name').css('color','red').css('font-size','30px');
+        $('.cpu-name').css('color','white').css('font-size','20px');
     } else {
-        $('.cpu-name').css('color','red').css('font-size','30px').css('text-align', 'center');
-        $('.player-name').css('color','white').css('font-size','20px').css('text-align', 'center');
+        $('.cpu-name').css('color','red').css('font-size','30px');
+        $('.player-name').css('color','white').css('font-size','20px');
     }
 }
 
@@ -576,8 +576,10 @@ const playCPU = () => {
 
 
 
-
-
+const gameRender = () => {
+    $('.cpu-Box').removeChildren($('.cpu-Box').childNodes);
+    $('.player-area').childNodes().remove();
+}
 
 
 
@@ -596,13 +598,11 @@ startPlayDiscard()
 //colorSelector()
 turnIdentifier()
 //showCpuCard()
+gameRender()
 
 
 //!USER LOGIC PROCESSING
 ////////////////////////////////////////////////////////////////////////////////////////////////
-const inital =() => {
-
-}
 const $playerhand = $(".playerHandCard")
 $playerhand.on('click', (event) => {
     let x = []
